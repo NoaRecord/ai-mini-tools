@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>AI Prompt URL Generator</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 30px 20px;
+      background: #f5f6f8;
+      color: #222;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Hiragino Kaku Gothic ProN",
+        "Hiragino Sans",
+        "Yu Gothic",
+        Meiryo,
+        sans-serif;
+      line-height: 1.6;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .description {
+      margin: 0 0 25px;
+      color: #666;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 280px;
+      padding: 14px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      resize: vertical;
+      background: #fff;
+      color: #222;
+      font: inherit;
+      line-height: 1.6;
+    }
+
+    textarea:focus,
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #777;
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .stat {
+      padding: 10px 12px;
+      background: #f7f7f7;
+      border-radius: 7px;
+      font-size: 14px;
+    }
+
+    .stat strong {
+      font-size: 15px;
+    }
+
+    .error {
+      display: none;
+      margin-top: 15px;
+      padding: 13px 15px;
+      border: 1px solid #e0aaaa;
+      border-radius: 8px;
+      background: #fff0f0;
+      color: #a00000;
+      font-weight: 600;
+      white-space: pre-wrap;
+    }
+
+    .service {
+      margin-top: 20px;
+    }
+
+    .service h2 {
+      margin: 0 0 18px;
+      font-size: 21px;
+    }
+
+    .field {
+      margin-bottom: 17px;
+    }
+
+    input[type="text"] {
+      display: block;
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid #ccc;
+      border-radius: 7px;
+      background: #fff;
+      color: #222;
+      font: inherit;
+    }
+
+    .url-box {
+      width: 100%;
+      min-height: 75px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+      background: #f8f8f8;
+      color: #333;
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Consolas,
+        monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+
+    .url-box.too-long {
+      background: #fff0f0;
+      border-color: #e0aaaa;
+      color: #a00000;
+    }
+
+    .url-info {
+      margin-top: 7px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .url-info.warning {
+      color: #a00000;
+      font-weight: 600;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 13px;
+    }
+
+    button {
+      appearance: none;
+      padding: 9px 14px;
+      border: 1px solid #bbb;
+      border-radius: 7px;
+      background: #fff;
+      color: #222;
+      cursor: pointer;
+      font: inherit;
+      transition:
+        background 0.15s,
+        border-color 0.15s,
+        opacity 0.15s;
+    }
+
+    button:hover:not(:disabled) {
+      background: #f0f0f0;
+      border-color: #888;
+    }
+
+    button.primary {
+      border-color: #222;
+      background: #222;
+      color: #fff;
+    }
+
+    button.primary:hover:not(:disabled) {
+      background: #444;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .html-preview {
+      margin-top: 20px;
+    }
+
+    .html-preview code {
+      display: block;
+      min-height: 55px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+      background: #f8f8f8;
+      color: #333;
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Consolas,
+        monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 10px;
+      color: #167016;
+      font-size: 14px;
+    }
+
+    .note {
+      margin: 20px 0 0;
+      color: #777;
+      font-size: 13px;
+    }
+
+    .limit {
+      font-weight: 600;
+    }
+
+    @media (max-width: 700px) {
+      body {
+        padding: 20px 12px;
+      }
+
+      .card {
+        padding: 17px;
+      }
+
+      h1 {
+        font-size: 23px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      textarea {
+        min-height: 230px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .buttons {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>AI Prompt URL Generator</h1>
+
+  <p class="description">
+    プロンプトをURLエンコードし、ChatGPT / Grok 用のURLとHTMLリンクを生成します。
+  </p>
+
+  <!-- =========================
+       Prompt
+       ========================= -->
+
+  <div class="card">
+
+```
+<label for="prompt">
+  プロンプト
+</label>
+
+<textarea
+  id="prompt"
+  placeholder="ここにプロンプトを入力してください。&#10;&#10;日本語、改行、記号、絵文字なども使用できます。"
+  spellcheck="false"
+></textarea>
+
+
+<div class="stats">
+
+  <div class="stat">
+    入力文字数<br>
+    <strong id="promptLength">0</strong>
+  </div>
+
+  <div class="stat">
+    ChatGPT URL<br>
+    <strong id="chatgptLength">0</strong>
+  </div>
+
+  <div class="stat">
+    Grok URL<br>
+    <strong id="grokLength">0</strong>
+  </div>
+
+  <div class="stat">
+    URL上限<br>
+    <strong>2,000</strong>
+  </div>
+
+</div>
+
+
+<div
+  id="error"
+  class="error"
+  role="alert"
+></div>
+```
+
+  </div>
+
+  <!-- =========================
+       ChatGPT
+       ========================= -->
+
+  <div class="card service">
+
+```
+<h2>ChatGPT</h2>
+
+
+<div class="field">
+
+  <label for="chatgptText">
+    リンク表示文字列
+  </label>
+
+  <input
+    type="text"
+    id="chatgptText"
+    value="ChatGPT"
+    spellcheck="false"
+  >
+
+</div>
+
+
+<label>
+  生成されたURL
+</label>
+
+<div
+  id="chatgptUrl"
+  class="url-box"
+>
+  プロンプトを入力してください。
+</div>
+
+
+<div
+  id="chatgptUrlInfo"
+  class="url-info"
+>
+  URL長：0 / 2,000
+</div>
+
+
+<div class="buttons">
+
+  <button
+    id="copyChatgptUrl"
+    class="primary"
+    type="button"
+    onclick="copyUrl('chatgpt')"
+  >
+    URLをコピー
+  </button>
+
+  <button
+    id="copyChatgptHtml"
+    type="button"
+    onclick="copyHtmlLink('chatgpt')"
+  >
+    &lt;a&gt;タグ付きでコピー
+  </button>
+
+  <button
+    id="openChatgpt"
+    type="button"
+    onclick="openUrl('chatgpt')"
+  >
+    ChatGPTを開く
+  </button>
+
+</div>
+
+
+<div class="html-preview">
+
+  <label>
+    コピーされるHTML
+  </label>
+
+  <code id="chatgptHtml">
+    &lt;a&gt;タグを生成します。
+  </code>
+
+</div>
+
+
+<div
+  id="chatgptStatus"
+  class="status"
+  aria-live="polite"
+></div>
+```
+
+  </div>
+
+  <!-- =========================
+       Grok
+       ========================= -->
+
+  <div class="card service">
+
+```
+<h2>Grok</h2>
+
+
+<div class="field">
+
+  <label for="grokText">
+    リンク表示文字列
+  </label>
+
+  <input
+    type="text"
+    id="grokText"
+    value="Grok"
+    spellcheck="false"
+  >
+
+</div>
+
+
+<label>
+  生成されたURL
+</label>
+
+<div
+  id="grokUrl"
+  class="url-box"
+>
+  プロンプトを入力してください。
+</div>
+
+
+<div
+  id="grokUrlInfo"
+  class="url-info"
+>
+  URL長：0 / 2,000
+</div>
+
+
+<div class="buttons">
+
+  <button
+    id="copyGrokUrl"
+    class="primary"
+    type="button"
+    onclick="copyUrl('grok')"
+  >
+    URLをコピー
+  </button>
+
+  <button
+    id="copyGrokHtml"
+    type="button"
+    onclick="copyHtmlLink('grok')"
+  >
+    &lt;a&gt;タグ付きでコピー
+  </button>
+
+  <button
+    id="openGrok"
+    type="button"
+    onclick="openUrl('grok')"
+  >
+    Grokを開く
+  </button>
+
+</div>
+
+
+<div class="html-preview">
+
+  <label>
+    コピーされるHTML
+  </label>
+
+  <code id="grokHtml">
+    &lt;a&gt;タグを生成します。
+  </code>
+
+</div>
+
+
+<div
+  id="grokStatus"
+  class="status"
+  aria-live="polite"
+></div>
+```
+
+  </div>
+
+  <p class="note">
+    ※ URL長は、URLエンコード後のクエリを含む「完成したURL全体」の文字数で判定しています。
+    安全側の基準として2,000文字を上限としています。
+  </p>
+
+</div>
+
+<script>
+
+  /*
+   * ==========================================
+   * 基本設定
+   * ==========================================
+   */
+
+  const MAX_URL_LENGTH = 2000;
+
+  const CHATGPT_BASE_URL =
+    "https://chatgpt.com/?prompt=";
+
+  const GROK_BASE_URL =
+    "https://grok.com/?q=";
+
+
+  /*
+   * ==========================================
+   * DOM
+   * ==========================================
+   */
+
+  const promptInput =
+    document.getElementById("prompt");
+
+  const chatgptText =
+    document.getElementById("chatgptText");
+
+  const grokText =
+    document.getElementById("grokText");
+
+
+  /*
+   * ==========================================
+   * URL生成
+   * ==========================================
+   */
+
+  function getServiceUrl(service) {
+
+    const prompt =
+      promptInput.value;
+
+    if (!prompt) {
+      return "";
+    }
+
+    const encodedPrompt =
+      encodeURIComponent(prompt);
+
+    if (service === "chatgpt") {
+
+      return (
+        CHATGPT_BASE_URL +
+        encodedPrompt
+      );
+
+    }
+
+    if (service === "grok") {
+
+      return (
+        GROK_BASE_URL +
+        encodedPrompt
+      );
+
+    }
+
+    return "";
+  }
+
+
+  /*
+   * ==========================================
+   * メイン更新処理
+   * ==========================================
+   */
+
+  function updateAll() {
+
+    const prompt =
+      promptInput.value;
+
+    document.getElementById(
+      "promptLength"
+    ).textContent =
+      prompt.length;
+
+
+    if (!prompt) {
+
+      resetOutput();
+
+      return;
+    }
+
+
+    const chatgptUrl =
+      getServiceUrl("chatgpt");
+
+    const grokUrl =
+      getServiceUrl("grok");
+
+
+    updateService(
+      "chatgpt",
+      chatgptUrl,
+      chatgptText.value
+    );
+
+
+    updateService(
+      "grok",
+      grokUrl,
+      grokText.value
+    );
+
+
+    document.getElementById(
+      "chatgptLength"
+    ).textContent =
+      chatgptUrl.length;
+
+
+    document.getElementById(
+      "grokLength"
+    ).textContent =
+      grokUrl.length;
+
+
+    updateOverallError(
+      chatgptUrl,
+      grokUrl
+    );
+  }
+
+
+  /*
+   * ==========================================
+   * サービスごとの表示更新
+   * ==========================================
+   */
+
+  function updateService(
+    service,
+    url,
+    linkText
+  ) {
+
+    const prefix =
+      capitalize(service);
+
+
+    const urlElement =
+      document.getElementById(
+        service + "Url"
+      );
+
+    const urlInfo =
+      document.getElementById(
+        service + "UrlInfo"
+      );
+
+    const htmlElement =
+      document.getElementById(
+        service + "Html"
+      );
+
+
+    const copyUrlButton =
+      document.getElementById(
+        "copy" + prefix + "Url"
+      );
+
+    const copyHtmlButton =
+      document.getElementById(
+        "copy" + prefix + "Html"
+      );
+
+    const openButton =
+      document.getElementById(
+        "open" + prefix
+      );
+
+
+    const valid =
+      url.length <= MAX_URL_LENGTH;
+
+
+    /*
+     * URL表示
+     */
+
+    if (valid) {
+
+      urlElement.textContent =
+        url;
+
+      urlElement.classList.remove(
+        "too-long"
+      );
+
+    } else {
+
+      urlElement.textContent =
+        "URLが長すぎるため、このURLは使用できません。";
+
+      urlElement.classList.add(
+        "too-long"
+      );
+    }
+
+
+    /*
+     * URL長表示
+     */
+
+    const remaining =
+      MAX_URL_LENGTH -
+      url.length;
+
+
+    if (valid) {
+
+      urlInfo.textContent =
+        `URL長：${url.length.toLocaleString()} / ` +
+        `${MAX_URL_LENGTH.toLocaleString()} ` +
+        `（残り ${remaining.toLocaleString()} 文字）`;
+
+      urlInfo.classList.remove(
+        "warning"
+      );
+
+    } else {
+
+      urlInfo.textContent =
+        `URL長：${url.length.toLocaleString()} / ` +
+        `${MAX_URL_LENGTH.toLocaleString()} ` +
+        `（${Math.abs(remaining).toLocaleString()} 文字超過）`;
+
+      urlInfo.classList.add(
+        "warning"
+      );
+    }
+
+
+    /*
+     * HTMLリンク生成
+     */
+
+    if (valid) {
+
+      const text =
+        linkText.trim() ||
+        service;
+
+      const html =
+        `<a href="${escapeAttribute(url)}" ` +
+        `target="_blank" ` +
+        `rel="noopener noreferrer">` +
+        `${escapeHtml(text)}` +
+        `</a>`;
+
+      htmlElement.textContent =
+        html;
+
+    } else {
+
+      htmlElement.textContent =
+        "URLが長すぎるため、HTMLリンクを生成できません。";
+    }
+
+
+    /*
+     * ボタン有効 / 無効
+     */
+
+    copyUrlButton.disabled =
+      !valid;
+
+    copyHtmlButton.disabled =
+      !valid;
+
+    openButton.disabled =
+      !valid;
+  }
+
+
+  /*
+   * ==========================================
+   * 全体エラー
+   * ==========================================
+   */
+
+  function updateOverallError(
+    chatgptUrl,
+    grokUrl
+  ) {
+
+    const error =
+      document.getElementById("error");
+
+    const errors = [];
+
+
+    if (
+      chatgptUrl.length >
+      MAX_URL_LENGTH
+    ) {
+
+      errors.push(
+        `ChatGPT：${chatgptUrl.length.toLocaleString()}文字 ` +
+        `（上限 ${MAX_URL_LENGTH.toLocaleString()}文字）`
+      );
+    }
+
+
+    if (
+      grokUrl.length >
+      MAX_URL_LENGTH
+    ) {
+
+      errors.push(
+        `Grok：${grokUrl.length.toLocaleString()}文字 ` +
+        `（上限 ${MAX_URL_LENGTH.toLocaleString()}文字）`
+      );
+    }
+
+
+    if (errors.length > 0) {
+
+      error.textContent =
+        "プロンプトが長すぎます。\n\n" +
+        errors.join("\n") +
+        "\n\n" +
+        "プロンプトを短くして、URL全体が2,000文字以内になるようにしてください。";
+
+      error.style.display =
+        "block";
+
+    } else {
+
+      error.textContent =
+        "";
+
+      error.style.display =
+        "none";
+    }
+  }
+
+
+  /*
+   * ==========================================
+   * URLコピー
+   * ==========================================
+   */
+
+  async function copyUrl(service) {
+
+    const url =
+      getServiceUrl(service);
+
+
+    if (
+      !url ||
+      url.length >
+      MAX_URL_LENGTH
+    ) {
+
+      return;
+    }
+
+
+    try {
+
+      if (
+        navigator.clipboard &&
+        navigator.clipboard.writeText
+      ) {
+
+        await navigator.clipboard.writeText(
+          url
+        );
+
+      } else {
+
+        fallbackCopy(url);
+      }
+
+
+      showStatus(
+        service,
+        "URLをコピーしました。"
+      );
+
+    } catch (error) {
+
+      try {
+
+        fallbackCopy(url);
+
+        showStatus(
+          service,
+          "URLをコピーしました。"
+        );
+
+      } catch (fallbackError) {
+
+        showStatus(
+          service,
+          "コピーに失敗しました。"
+        );
+      }
+    }
+  }
+
+
+  /*
+   * ==========================================
+   * HTMLリンクコピー
+   * ==========================================
+   */
+
+  async function copyHtmlLink(service) {
+
+    const url =
+      getServiceUrl(service);
+
+
+    if (
+      !url ||
+      url.length >
+      MAX_URL_LENGTH
+    ) {
+
+      return;
+    }
+
+
+    const linkText =
+      service === "chatgpt"
+        ? chatgptText.value.trim()
+        : grokText.value.trim();
+
+
+    const text =
+      linkText ||
+      service;
+
+
+    const html =
+      `<a href="${escapeAttribute(url)}" ` +
+      `target="_blank" ` +
+      `rel="noopener noreferrer">` +
+      `${escapeHtml(text)}` +
+      `</a>`;
+
+
+    /*
+     * HTML Clipboard API
+     *
+     * text/html と text/plain の両方を
+     * クリップボードに格納します。
+     *
+     * HTML対応アプリ：
+     *   → クリック可能なリンクとして貼り付け
+     *
+     * プレーンテキスト環境：
+     *   → <a href="...">...</a> として貼り付け
+     */
+
+    try {
+
+      if (
+        navigator.clipboard &&
+        window.ClipboardItem &&
+        navigator.clipboard.write
+      ) {
+
+        const clipboardItem =
+          new ClipboardItem({
+
+            "text/html":
+              new Blob(
+                [html],
+                {
+                  type: "text/html"
+                }
+              ),
+
+            "text/plain":
+              new Blob(
+                [html],
+                {
+                  type: "text/plain"
+                }
+              )
+          });
+
+
+        await navigator.clipboard.write([
+          clipboardItem
+        ]);
+
+      } else {
+
+        fallbackCopy(html);
+      }
+
+
+      showStatus(
+        service,
+        "<a>タグ付きHTMLをコピーしました。"
+      );
+
+    } catch (error) {
+
+      try {
+
+        fallbackCopy(html);
+
+        showStatus(
+          service,
+          "<a>タグ付きHTMLをコピーしました。"
+        );
+
+      } catch (fallbackError) {
+
+        showStatus(
+          service,
+          "コピーに失敗しました。"
+        );
+      }
+    }
+  }
+
+
+  /*
+   * ==========================================
+   * URLを開く
+   * ==========================================
+   */
+
+  function openUrl(service) {
+
+    const url =
+      getServiceUrl(service);
+
+
+    if (
+      !url ||
+      url.length >
+      MAX_URL_LENGTH
+    ) {
+
+      return;
+    }
+
+
+    window.open(
+      url,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  }
+
+
+  /*
+   * ==========================================
+   * HTMLエスケープ
+   * ==========================================
+   */
+
+  function escapeHtml(text) {
+
+    return String(text)
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+      .replace(
+        /'/g,
+        "&#039;"
+      );
+  }
+
+
+  /*
+   * ==========================================
+   * HTML属性用エスケープ
+   * ==========================================
+   */
+
+  function escapeAttribute(text) {
+
+    return String(text)
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      );
+  }
+
+
+  /*
+   * ==========================================
+   * Clipboard API フォールバック
+   * ==========================================
+   *
+   * file:// から開いた場合など、
+   * navigator.clipboard が利用できない環境に対応。
+   */
+
+  function fallbackCopy(text) {
+
+    const textarea =
+      document.createElement(
+        "textarea"
+      );
+
+
+    textarea.value =
+      text;
+
+    textarea.style.position =
+      "fixed";
+
+    textarea.style.left =
+      "-9999px";
+
+    textarea.style.top =
+      "0";
+
+    textarea.style.opacity =
+      "0";
+
+
+    document.body.appendChild(
+      textarea
+    );
+
+
+    textarea.focus();
+
+    textarea.select();
+
+
+    const success =
+      document.execCommand(
+        "copy"
+      );
+
+
+    document.body.removeChild(
+      textarea
+    );
+
+
+    if (!success) {
+
+      throw new Error(
+        "コピーに失敗しました。"
+      );
+    }
+  }
+
+
+  /*
+   * ==========================================
+   * ステータス表示
+   * ==========================================
+   */
+
+  function showStatus(
+    service,
+    message
+  ) {
+
+    const element =
+      document.getElementById(
+        service + "Status"
+      );
+
+
+    element.textContent =
+      message;
+
+
+    setTimeout(
+      () => {
+        element.textContent =
+          "";
+      },
+      2500
+    );
+  }
+
+
+  /*
+   * ==========================================
+   * 初期化
+   * ==========================================
+   */
+
+  function resetOutput() {
+
+    document.getElementById(
+      "chatgptUrl"
+    ).textContent =
+      "プロンプトを入力してください。";
+
+    document.getElementById(
+      "grokUrl"
+    ).textContent =
+      "プロンプトを入力してください。";
+
+
+    document.getElementById(
+      "chatgptUrl"
+    ).classList.remove(
+      "too-long"
+    );
+
+    document.getElementById(
+      "grokUrl"
+    ).classList.remove(
+      "too-long"
+    );
+
+
+    document.getElementById(
+      "chatgptUrlInfo"
+    ).textContent =
+      "URL長：0 / 2,000";
+
+    document.getElementById(
+      "grokUrlInfo"
+    ).textContent =
+      "URL長：0 / 2,000";
+
+
+    document.getElementById(
+      "chatgptUrlInfo"
+    ).classList.remove(
+      "warning"
+    );
+
+    document.getElementById(
+      "grokUrlInfo"
+    ).classList.remove(
+      "warning"
+    );
+
+
+    document.getElementById(
+      "chatgptHtml"
+    ).textContent =
+      "<a>タグを生成します。";
+
+    document.getElementById(
+      "grokHtml"
+    ).textContent =
+      "<a>タグを生成します。";
+
+
+    document.getElementById(
+      "chatgptLength"
+    ).textContent =
+      "0";
+
+    document.getElementById(
+      "grokLength"
+    ).textContent =
+      "0";
+
+
+    document.getElementById(
+      "error"
+    ).style.display =
+      "none";
+
+
+    const buttons = [
+
+      "copyChatgptUrl",
+      "copyChatgptHtml",
+      "openChatgpt",
+
+      "copyGrokUrl",
+      "copyGrokHtml",
+      "openGrok"
+
+    ];
+
+
+    buttons.forEach(
+      id => {
+        document.getElementById(
+          id
+        ).disabled = true;
+      }
+    );
+  }
+
+
+  /*
+   * ==========================================
+   * 先頭文字を大文字化
+   * ==========================================
+   */
+
+  function capitalize(text) {
+
+    return (
+      text.charAt(0).toUpperCase() +
+      text.slice(1)
+    );
+  }
+
+
+  /*
+   * ==========================================
+   * イベント
+   * ==========================================
+   */
+
+  promptInput.addEventListener(
+    "input",
+    updateAll
+  );
+
+  chatgptText.addEventListener(
+    "input",
+    updateAll
+  );
+
+  grokText.addEventListener(
+    "input",
+    updateAll
+  );
+
+
+  /*
+   * ==========================================
+   * 初期状態
+   * ==========================================
+   */
+
+  resetOutput();
+
+</script>
+
+</body>
+</html>

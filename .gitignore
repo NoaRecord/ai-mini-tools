@@ -1,0 +1,10 @@
+# Operating-system and editor artifacts only; the site has no generated build output.
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*~
+
+# Local handoff artifacts; these are not part of the public repository.
+AGENTS.md.old
+ai-mini-tools-codex-handoff.zip
